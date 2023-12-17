@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Transactions;
 using UnityEngine;
 
 //TO DO: make code to get the correct rotation for stuff to spawn making a clear path from one end of the generation to the other
@@ -19,6 +20,10 @@ public class TrialRoomClass : MonoBehaviour
     int roomSize;   //so I know how many coordinates apart each spawn must be
     int currentIndex;   //so I know which part of the array I'm on for adding rooms to the floor array
 
+    //upper and lower bound for generating spawn point
+    int lowerBoundGSP;
+    int upperBoundGSP;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -32,9 +37,22 @@ public class TrialRoomClass : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //1 and 4 are defaults, upperBound NOT inclusive (so will +1 later)
+        lowerBoundGSP = 1;
+        upperBoundGSP = 4;
+
         validSpawn = false;
 
-        floor[currentIndex] = new Rooms();
+        //so that one exit rooms don't spawn in the middle and ruin the pathway
+        if (currentIndex == 0 || currentIndex == 4)
+        {
+            floor[currentIndex] = new Rooms(1);
+        }
+        else
+        {
+            floor[currentIndex] = new Rooms(2);
+        }
+
         floor[currentIndex].ChosenPrefab = (roomPrefabs[floor[currentIndex].RoomType]); //storing the prefab
 
         //have to rotate after spawning otherwise rooms won't spawn in correct locations
@@ -44,8 +62,47 @@ public class TrialRoomClass : MonoBehaviour
 
         currentIndex++;
         previousPosition = spawnPosition;
-        
-        //ensuring one room doesn't spawn on top of another
+
+        if (currentIndex > 0)
+        {
+            if (floor[currentIndex].Rotations == 2)
+            {
+                switch(floor[currentIndex].ChosenRotation)
+                {
+                    case 1:
+                        lowerBoundGSP = 1;
+                        upperBoundGSP = 3;
+                        break;
+                    case 2:
+                        lowerBoundGSP = 2;
+                        upperBoundGSP = 4;
+                        break;
+                }
+            }
+            else if (floor[currentIndex].Rotations == 4)
+            {
+                switch (floor[currentIndex].RoomType)
+                {
+                    case 1:
+                        lowerBoundGSP = floor[currentIndex].ChosenRotation;
+                        upperBoundGSP = floor[currentIndex].ChosenRotation;
+                        break;
+                    //2 exit L shape
+                    case 3:
+                        lowerBoundGSP = floor[currentIndex].ChosenRotation;
+                        upperBoundGSP = lowerBoundGSP + 1;
+                        break;
+                    //3 exit
+                    case 4:
+                        lowerBoundGSP = floor[currentIndex].ChosenRotation;
+                        upperBoundGSP = lowerBoundGSP + 2;
+                        break;
+                }
+            }
+        }
+
+        //ensuring one room doesn't spawn on top of another for the next room (not current one)
+        //COULD MAKE THIS INTO A METHOD OF THE ROOM CLASS
         while (!validSpawn)
         {
             validSpawn = true;
@@ -70,25 +127,83 @@ public class TrialRoomClass : MonoBehaviour
         }
     }
 
-    Vector3 GenerateSpawnPosition()
+    //FUNCTIONS
+    Vector3 GenerateSpawnPosition()   //upperBound NOT inclusive, so have to +1
     {
-        switch (Random.Range(1, 5))
+        if (floor[currentIndex].Rotations == 2 || floor[currentIndex].Rotations == -1)  //section works for both 2 rotations and 0 rotations
         {
-            case 1:
-                spawnPosition.z += roomSize;
-                break;
-            case 2:
-                spawnPosition.x += roomSize;
-                break;
-            case 3:
-                spawnPosition.z -= roomSize;
-                break;
-            case 4:
-                spawnPosition.x -= roomSize;
-                break;
+            switch (Random.Range(lowerBoundGSP, upperBoundGSP + 1))
+            {
+                case 1:
+                    spawnPosition.z += roomSize;
+                    break;
+                case 2:
+                    if (upperBoundGSP != 3) //so if the room is not vertical
+                    {
+                        spawnPosition.x += roomSize;
+                    }
+                    break;
+                case 3:
+                    if (lowerBoundGSP != 2) //if the room is not horizontal
+                    {
+                        spawnPosition.z -= roomSize;
+                    }
+                    break;
+                case 4:
+                    spawnPosition.x -= roomSize;
+                    break;
+            }
+
+        }
+        else if (floor[currentIndex].RoomType == 1 || floor[currentIndex].RoomType == 3)
+        {
+            switch (Random.Range(lowerBoundGSP, upperBoundGSP + 1))
+            {
+                case 1:
+                case 5:
+                    spawnPosition.z += roomSize;
+                    break;
+                case 2:
+                    if (lowerBoundGSP != 1 && upperBoundGSP != 4)
+                    {
+                        spawnPosition.x += roomSize;
+                    }
+                    break;
+                case 3:
+                    if (lowerBoundGSP != 1 && upperBoundGSP != 4)
+                    {
+                        spawnPosition.z -= roomSize;
+                    }
+                    break;
+                case 4:
+                    spawnPosition.x -= roomSize;
+                    break;
+            }
+        }
+        else if (floor[currentIndex].RoomType == 4 || floor[currentIndex].RoomType == 5)    //3 and 4 exit rooms
+        {
+            switch (Random.Range(lowerBoundGSP, upperBoundGSP + 1))
+            {
+                case 1:
+                case 5:
+                    spawnPosition.z += roomSize;
+                    break;
+                case 2:
+                case 6:
+                    spawnPosition.x += roomSize;
+                    break;
+                case 3:
+                    spawnPosition.z -= roomSize;
+                    break;
+                case 4:
+                    spawnPosition.x -= roomSize;
+                    break;
+            }
         }
         return spawnPosition;
     }
+
+    //CLASSES
     class Rooms
     {
         int roomType;  //5 different options (check prefabs)
@@ -98,9 +213,9 @@ public class TrialRoomClass : MonoBehaviour
         Vector3 position;
         GameObject chosenPrefab;
 
-        public Rooms()
+        public Rooms(int lowerBound)    //lowerBound so I can adjust what rooms can be spawned (default should be 1)
         {
-            roomType = Random.Range(1, 5);
+            roomType = Random.Range(lowerBound, 5);
 
             switch (roomType)
             {
@@ -167,5 +282,7 @@ public class TrialRoomClass : MonoBehaviour
             return degrees;
         }
         public Vector3 Position { get => position; set => position = value; }
+        public int Rotations { get => rotations;}
+        public int ChosenRotation { get => chosenRotation;}
     }
 }
