@@ -4,13 +4,15 @@ using System.ComponentModel;
 using System.Transactions;
 using UnityEngine;
 
+//TO DO: rooms are spawning on top of each other sometimes for some reason
 //TO DO: make code to get the correct rotation for stuff to spawn making a clear path from one end of the generation to the other
+    //pathway isn't currently working
+//TO DO: link rooms
 public class TrialRoomClass : MonoBehaviour
 {
     Rooms[] floor = new Rooms[17];  //to hold the entire map with reference to each room that is generated
     // if going with when I fill in all the rooms that aren't along the main passage, they are filled in with 1 exit ones then yeah
 
-    string[] roomLinks;    //holds the pointer of the rooms that are linked, multiple links are separated by '#'
     public GameObject[] roomPrefabs = new GameObject[5];    // the number of elements that you want in the array goes in the []
 
     Vector3 spawnPosition;
@@ -31,7 +33,6 @@ public class TrialRoomClass : MonoBehaviour
         previousPosition = new Vector3(0, 0, 0);
         roomSize = 10;  //has to be 10 otherwise rooms overlap
         currentIndex = 0;
-        validSpawn = false;
     }
 
     // Update is called once per frame
@@ -43,87 +44,107 @@ public class TrialRoomClass : MonoBehaviour
 
         validSpawn = false;
 
-        //so that one exit rooms don't spawn in the middle and ruin the pathway
-        if (currentIndex == 0 || currentIndex == 4)
+        //had to change to <5 as sometimes the current index can go higher than 5
+        if (currentIndex < 5)  //so that code doesn't run if the main path has been finished
         {
-            floor[currentIndex] = new Rooms(1);
+            //first room spawn onlys
+            if (currentIndex == 0)
+            {
+                floor[currentIndex] = new Rooms(1);
+                floor[currentIndex].Position = spawnPosition;
+            }
+
+            floor[currentIndex].ChosenPrefab = roomPrefabs[floor[currentIndex].RoomType]; //storing the prefab
+
+            //have to rotate after spawning otherwise rooms won't spawn in correct locations
+            Instantiate(floor[currentIndex].ChosenPrefab, spawnPosition, new Quaternion(0, 0, 0, 0));
+            floor[currentIndex].ChosenPrefab.transform.rotation = new Quaternion(0, floor[currentIndex].returnRotation(), 0, 0);
         }
         else
         {
-            floor[currentIndex] = new Rooms(2);
+            Object.Destroy(this);
         }
-
-        floor[currentIndex].ChosenPrefab = (roomPrefabs[floor[currentIndex].RoomType]); //storing the prefab
-
-        //have to rotate after spawning otherwise rooms won't spawn in correct locations
-        Instantiate(floor[currentIndex].ChosenPrefab, spawnPosition, new Quaternion(0, 0, 0, 0));
-        floor[currentIndex].Position = spawnPosition;   //doesn't seem to save the correct position of the spawned rooms so am doing this instead
-        floor[currentIndex].ChosenPrefab.transform.rotation = new Quaternion(0, floor[currentIndex].returnRotation(),0,0);
 
         currentIndex++;
         previousPosition = spawnPosition;
 
-        if (currentIndex > 0)
+        //so the next room won't go over the max spawn number of 5 roonms
+        if (currentIndex < 5)
         {
-            if (floor[currentIndex].Rotations == 2)
+            //to make the next room to spawn
+            if (currentIndex == 4)
             {
-                switch(floor[currentIndex].ChosenRotation)
+                floor[currentIndex] = new Rooms(1);
+            }
+            else if (currentIndex != 0)
+            {
+                floor[currentIndex] = new Rooms(2);
+            }
+            //for the next room
+            floor[currentIndex].Position = spawnPosition;   //doesn't seem to save the correct position of the spawned rooms so am doing this instead
+
+            if (currentIndex > 0)
+            {
+                if (floor[currentIndex].Rotations == 2)
                 {
-                    case 1:
-                        lowerBoundGSP = 1;
-                        upperBoundGSP = 3;
-                        break;
-                    case 2:
-                        lowerBoundGSP = 2;
-                        upperBoundGSP = 4;
-                        break;
+                    switch (floor[currentIndex].ChosenRotation)
+                    {
+                        case 1:
+                            lowerBoundGSP = 1;
+                            upperBoundGSP = 3;
+                            break;
+                        case 2:
+                            lowerBoundGSP = 2;
+                            upperBoundGSP = 4;
+                            break;
+                    }
+                }
+                else if (floor[currentIndex].Rotations == 4)
+                {
+                    switch (floor[currentIndex].RoomType)
+                    {
+                        case 1:
+                            lowerBoundGSP = floor[currentIndex].ChosenRotation;
+                            upperBoundGSP = floor[currentIndex].ChosenRotation;
+                            break;
+                        //2 exit L shape
+                        case 3:
+                            lowerBoundGSP = floor[currentIndex].ChosenRotation;
+                            upperBoundGSP = lowerBoundGSP + 1;
+                            break;
+                        //3 exit
+                        case 4:
+                            lowerBoundGSP = floor[currentIndex].ChosenRotation;
+                            upperBoundGSP = lowerBoundGSP + 2;
+                            break;
+                    }
                 }
             }
-            else if (floor[currentIndex].Rotations == 4)
+            //ensuring one room doesn't spawn on top of another for the next room (not current one)
+            //COULD MAKE THIS INTO A METHOD OF THE ROOM CLASS
+            while (!validSpawn && (floor[currentIndex].ExitsUsed < floor[currentIndex].NumExits))
             {
-                switch (floor[currentIndex].RoomType)
+                floor[currentIndex].UseExit();
+
+                validSpawn = true;
+                spawnPosition = previousPosition;
+                GenerateSpawnPosition();
+
+                //checking where the room wants to spawn is clear
+                for (int i = 0; i < currentIndex; i++)
                 {
-                    case 1:
-                        lowerBoundGSP = floor[currentIndex].ChosenRotation;
-                        upperBoundGSP = floor[currentIndex].ChosenRotation;
-                        break;
-                    //2 exit L shape
-                    case 3:
-                        lowerBoundGSP = floor[currentIndex].ChosenRotation;
-                        upperBoundGSP = lowerBoundGSP + 1;
-                        break;
-                    //3 exit
-                    case 4:
-                        lowerBoundGSP = floor[currentIndex].ChosenRotation;
-                        upperBoundGSP = lowerBoundGSP + 2;
-                        break;
+                    if (floor[i].Position == spawnPosition)
+                    {
+                        validSpawn = false;
+                    }
                 }
             }
-        }
 
-        //ensuring one room doesn't spawn on top of another for the next room (not current one)
-        //COULD MAKE THIS INTO A METHOD OF THE ROOM CLASS
-        while (!validSpawn)
-        {
-            validSpawn = true;
-            spawnPosition = previousPosition;
-            GenerateSpawnPosition();
-
-            //checking where the room wants to spawn is clear
-            for (int i = 0; i < currentIndex; i++)
+            //so that a forever loop won't happen
+            if (floor[currentIndex].ExitsUsed == floor[currentIndex].NumExits)
             {
-                if (floor[i].Position == spawnPosition)   //currentIndex - 1 because we've already increased the index by 1
-                {
-                    validSpawn = false;
-                    Debug.Log(validSpawn);
-                }
+                currentIndex = 5;
             }
-        }
-
-        if (currentIndex == 5)
-
-        {
-            Object.Destroy(this);
         }
     }
 
@@ -209,7 +230,10 @@ public class TrialRoomClass : MonoBehaviour
         int roomType;  //5 different options (check prefabs)
         int rotations;  //the number of ways a room can be rotated
         int chosenRotation; //which rotation out of the number it is
-        bool[] exitsUsed;   //on construction will need to declare the amount positions in the array
+
+        int exitsUsed;   //on construction will need to declare the amount positions in the array
+        int numExits;   //number of exits the room has
+
         Vector3 position;
         GameObject chosenPrefab;
 
@@ -220,14 +244,23 @@ public class TrialRoomClass : MonoBehaviour
             switch (roomType)
             {
                 case 1:
+                    numExits = 1;
+                    rotations = 4;
+                    break;
                 case 3:
+                    numExits = 2;
+                    rotations = 4;
+                    break;
                 case 4:
+                    numExits = 3;
                     rotations = 4;
                     break;
                 case 2:
+                    numExits = 2;
                     rotations = 2;
                     break;
                 default:
+                    numExits = 4;
                     rotations = -1; //doesn't have multiple rotations
                     break;
             }
@@ -241,27 +274,15 @@ public class TrialRoomClass : MonoBehaviour
                 chosenRotation = -1;    //no specific rotation because none available
             }
 
-            if (roomType > 2)
-            {
-                exitsUsed = new bool[roomType - 1]; //so that room has the correct number of exits
-                //how I've designed this means that this idea should work
-            }
-            else
-            {
-                exitsUsed = new bool[roomType];
-            }
-
-            //ensuring none of the exits have been used yet
-            for (int x = 0; x < exitsUsed.Length; x++)
-            {
-                exitsUsed[x] = false;
-            }
+            exitsUsed = 0;
         }
 
-        public void UseExit(int exit)
+        public void UseExit()
         {
-            exitsUsed[exit - 1] = true;
+            exitsUsed += 1;
         }
+        public int ExitsUsed { get => exitsUsed; }
+        public int NumExits { get => numExits; }
 
         public GameObject ChosenPrefab {get => chosenPrefab; set => chosenPrefab = value; }
 
