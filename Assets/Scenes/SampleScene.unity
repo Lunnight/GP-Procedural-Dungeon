@@ -320,7 +320,7 @@ GameObject:
   - component: {fileID: 1254302423}
   - component: {fileID: 1254302422}
   m_Layer: 0
-  m_Name: RoomGenetor
+  m_Name: RoomGenerator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
