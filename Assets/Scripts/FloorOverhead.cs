@@ -15,7 +15,7 @@ public class FloorOverhead : MonoBehaviour
         RoomPositions = new List<Vector3>();
 
         //instantiates a random starting room
-        startingRoom =  Instantiate(RoomPrefabs[UnityEngine.Random.Range(0, 1)],new Vector3(0, 0, 0), new Quaternion(0, 0, 0, 0));
+        startingRoom =  Instantiate(RoomPrefabs[UnityEngine.Random.Range(0, 5)],new Vector3(0, 0, 0), new Quaternion(0, 0, 0, 0));
         startingRoom.transform.Rotate(new Vector3(0, UnityEngine.Random.Range(0, 4) * 90, 0));  //gives room random rotation
 
         RoomPositions.Add(new Vector3(0,0,0));

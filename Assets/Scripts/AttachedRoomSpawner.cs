@@ -20,8 +20,7 @@ public class AttachedRoomSpawner : MonoBehaviour
         chosenRoom = overheadSpawner.RoomPrefabs[UnityEngine.Random.Range(0,5)];
 
         direction = transform.position - thisPrefab.transform.position;    //gets the direction that the new room will spawn
-        direction = new Vector3(Mathf.RoundToInt(direction.x * 5)/5, 0, Mathf.RoundToInt(direction.y * 5) / 5);
-        Debug.Log(direction);
+        direction = new Vector3(Mathf.RoundToInt(direction.x/5)*5, 0, Mathf.RoundToInt(direction.z / 5) *5);
 
         //all rooms (room 4's middle exit) face -ve z
         //used "5" and "-5" because if I use ">0" or "<0" sometimes the program gives me a ridiculously small number that is close to 0, but not 0, which messes up the code
@@ -44,7 +43,7 @@ public class AttachedRoomSpawner : MonoBehaviour
         }
 
         //so 1 exit rooms will start only spawning after 10 rooms have spawned, stopping the program
-        if (overheadSpawner.RoomPositions.Count > 3)
+        if (overheadSpawner.RoomPositions.Count > 10)
         {
             chosenRoom = overheadSpawner.RoomPrefabs[0];
         }
@@ -52,7 +51,6 @@ public class AttachedRoomSpawner : MonoBehaviour
         //2*direction = the length of one room (- or + 10)
         if (overheadSpawner.AddRoom((2*direction) + thisPrefab.transform.position))
         {
-            Debug.Log(direction);
             spawnedRoom = Instantiate(chosenRoom, (2*direction) + thisPrefab.transform.position, new Quaternion(0, 0, 0, 0));
             spawnedRoom.transform.Rotate(new Vector3(0, rotation * 90, 0));
         }
