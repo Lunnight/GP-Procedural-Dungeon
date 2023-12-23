@@ -309,7 +309,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1254302421
+--- !u!1 &1987207535
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -317,40 +317,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1254302423}
-  - component: {fileID: 1254302422}
+  - component: {fileID: 1987207536}
+  - component: {fileID: 1987207537}
   m_Layer: 0
-  m_Name: RoomGenerator
+  m_Name: OverheadSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1254302422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1254302421}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6f4b6a4714fa0b4bb581cc9d0d3967f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  roomPrefabs:
-  - {fileID: 4202588281981559610, guid: 3052d31f071456149ad1f87cf01c27c0, type: 3}
-  - {fileID: 4202588281981559610, guid: 6939b16c489a1a646a332ca55b46ea9f, type: 3}
-  - {fileID: 4202588281981559610, guid: 80b58e8923867174cb05aa78fa151778, type: 3}
-  - {fileID: 4202588281981559610, guid: 9ae68db81dd1a9b4cb84ef02e7fbd773, type: 3}
-  - {fileID: 4202588281981559610, guid: 20f66a26acda1a0469d7a2078e5aec08, type: 3}
---- !u!4 &1254302423
+--- !u!4 &1987207536
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1254302421}
+  m_GameObject: {fileID: 1987207535}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -359,10 +341,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1987207537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1987207535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f4c8cd3deab60e429841f68aac241b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RoomPrefabs:
+  - {fileID: 4202588281981559610, guid: 3052d31f071456149ad1f87cf01c27c0, type: 3}
+  - {fileID: 4202588281981559610, guid: 6939b16c489a1a646a332ca55b46ea9f, type: 3}
+  - {fileID: 4202588281981559610, guid: 80b58e8923867174cb05aa78fa151778, type: 3}
+  - {fileID: 4202588281981559610, guid: 9ae68db81dd1a9b4cb84ef02e7fbd773, type: 3}
+  - {fileID: 8644940545405689771, guid: a8c5aaebecb7b86479e2271ba9fcf313, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 963194228}
   - {fileID: 705507995}
-  - {fileID: 1254302423}
+  - {fileID: 1987207536}
