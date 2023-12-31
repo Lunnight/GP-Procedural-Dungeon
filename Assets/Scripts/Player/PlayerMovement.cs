@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public GameObject endScreen;
+
     // variables
     bool isGrounded;
     public float jumpForce;
@@ -76,6 +78,11 @@ public class PlayerMovement : MonoBehaviour
         if (collision.gameObject.tag == "Floor")
         {
             isGrounded = true;
+        }
+
+        if (collision.gameObject.tag == "Finish")
+        {
+            endScreen.SetActive(true);
         }
     }
 }
