@@ -15,6 +15,7 @@ public class PlayerInventory : MonoBehaviour
     GameObject canvas;
     TextMeshProUGUI invenDisplay;
     TextMeshProUGUI fullInventoryDisplay;
+    TextMeshProUGUI inventoryDelete;
     bool displaying;
 
     //main
@@ -26,8 +27,11 @@ public class PlayerInventory : MonoBehaviour
 
         canvas = GameObject.Find("Canvas");
         invenDisplay = GameObject.Find("Inventory").GetComponent<TextMeshProUGUI>();
+
         fullInventoryDisplay = GameObject.Find("FullInventory").GetComponent<TextMeshProUGUI>();
         fullInventoryDisplay.CrossFadeAlpha(0, 0, true);
+        inventoryDelete = GameObject.Find("InventoryDelete").GetComponent<TextMeshProUGUI>();
+        inventoryDelete.CrossFadeAlpha(0, 0, true);
     }
 
     void Update()
@@ -36,9 +40,61 @@ public class PlayerInventory : MonoBehaviour
         {
             DisplayInventory();
         }
+        //deleting item in slot 1, 2 or 3
+        else if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            DeleteItem(1);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            DeleteItem(2);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            DeleteItem(3);
+        }
     }
 
     //functions
+
+    public void DeleteItem(int index)
+    {
+        index--;    //originally num between 1 and 3, - to make into array index
+
+        if (inventoryIndex == -1)
+        {
+            inventoryDelete.text = "Inventory Empty";
+        }
+        else if (inventory[index] == null)
+        {
+            inventoryDelete.text = "Slot Empty";
+        }
+        else
+        {
+            Item[] tempInventory = new Item[3];
+            int counter = -1;
+
+            inventory[index] = null;
+
+            for (int i = 0; i <= inventoryIndex; i++)
+            {
+                if (inventory[i] != null)
+                {
+                    counter++;
+                    tempInventory[counter] = inventory[i];
+                }
+            }
+
+            inventoryIndex = counter;
+            inventory = tempInventory;
+
+            UpdateDisplay();
+            inventoryDelete.text = "Item Removed";
+        }
+
+        inventoryDelete.CrossFadeAlpha(1, 0, true);
+        inventoryDelete.CrossFadeAlpha(0, 2f, true);
+    }
     public void UpdateDisplay()
     {
         invenDisplay.text = null;
@@ -124,10 +180,10 @@ public class PlayerInventory : MonoBehaviour
 
         itemDetails = groundItem.gameObject.GetComponent<ItemDetails>();
 
-        if (inventoryIndex < inventory.Length)
+        existingItemIndex = CheckInventory(itemDetails.itemType);
+        if (inventoryIndex + 1 < inventory.Length || existingItemIndex != -1)
         {
             fullInventory = false;
-            existingItemIndex = CheckInventory(itemDetails.itemType);
             if (existingItemIndex == -1)
             {
                 inventoryIndex++;
@@ -155,7 +211,7 @@ public class PlayerInventory : MonoBehaviour
         }
         public bool IncreaseQuantity()
         {
-            if (quantity < 1)
+            if (quantity < 2)
             {
                 quantity += 1;
                 return true;
