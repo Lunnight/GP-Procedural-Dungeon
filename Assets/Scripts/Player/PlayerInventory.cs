@@ -22,6 +22,8 @@ public class PlayerInventory : MonoBehaviour
     //for item use
     FloorOverhead floorOverhead;
     bool uPressed;
+    Transform collisionFloor;
+    public Material[] roomColours;
 
     //main
     void Start()
@@ -124,7 +126,7 @@ public class PlayerInventory : MonoBehaviour
 
         if (inventory[index] != null)
         {
-            //potion and weapon currently have no use
+            //potion and Paint currently have no use
             switch (inventory[index].ItemType)
             {
                 case "Potion":
@@ -138,8 +140,28 @@ public class PlayerInventory : MonoBehaviour
 
                     invenManage.text = "Teleport used";
                     break;
-                case "Weapon":
-                    invenManage.text = "Weapon has no use";
+                case "Paint":
+                    GameObject prefabRoom;
+                    Material partColour = roomColours[UnityEngine.Random.Range(0, roomColours.Length)];
+                    for (int i = 0; i < floorOverhead.RoomPositions.Count; i++)
+                    {
+                        // find the room the player is in
+                        if (floorOverhead.RoomPositions[i] == collisionFloor.position)
+                        {
+                            prefabRoom = collisionFloor.parent.gameObject; //gets the prefab the floor is attached to
+
+                            for (int x = 0; x < prefabRoom.transform.childCount; x++)
+                            {
+                                //if it's a floor or wall then change its colour
+                                if (prefabRoom.transform.GetChild(x).tag == "Floor" || prefabRoom.transform.GetChild(x).tag == "Wall")
+                                {
+                                    prefabRoom.transform.GetChild(x).GetComponent<MeshRenderer>().material = partColour;
+                                }
+                            }
+                        }
+                    }
+
+                    invenManage.text = "Paint used";
                     break;
             }
             inventory[index].DecreaseQuantity();
@@ -239,6 +261,11 @@ public class PlayerInventory : MonoBehaviour
                 ItemDetails itemDetails = GameObject.FindObjectOfType<ItemDetails>();
                 Destroy(collision.gameObject);
             }
+        }
+        //for paint item
+        if (collision.gameObject.tag == "Floor")
+        {
+            collisionFloor = collision.gameObject.transform;
         }
     }
     int CheckInventory(string groundItem)

@@ -1317,6 +1317,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46ec3d77128e226439721a73b14fadcb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  roomColours:
+  - {fileID: 2100000, guid: 112ff0579a940774e8cb0645518fc46d, type: 2}
+  - {fileID: 2100000, guid: 39ae9d3485a4ae04386d068cc58d8b47, type: 2}
+  - {fileID: 2100000, guid: eebec1a05a85f434095abc6867c6d14c, type: 2}
+  - {fileID: 2100000, guid: bae21b043d8ce3c49b2a07e0f355e8a7, type: 2}
+  - {fileID: 2100000, guid: b46d896ab0359ba4589f432fe39e437a, type: 2}
+  - {fileID: 2100000, guid: 4d9f45c68e5e9824896818dee985001f, type: 2}
 --- !u!1 &1987207535
 GameObject:
   m_ObjectHideFlags: 0
