@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
@@ -15,8 +16,12 @@ public class PlayerInventory : MonoBehaviour
     GameObject canvas;
     TextMeshProUGUI invenDisplay;
     TextMeshProUGUI fullInventoryDisplay;
-    TextMeshProUGUI inventoryDelete;
+    TextMeshProUGUI invenManage;
     bool displaying;
+
+    //for item use
+    FloorOverhead floorOverhead;
+    bool uPressed;
 
     //main
     void Start()
@@ -30,8 +35,11 @@ public class PlayerInventory : MonoBehaviour
 
         fullInventoryDisplay = GameObject.Find("FullInventory").GetComponent<TextMeshProUGUI>();
         fullInventoryDisplay.CrossFadeAlpha(0, 0, true);
-        inventoryDelete = GameObject.Find("InventoryDelete").GetComponent<TextMeshProUGUI>();
-        inventoryDelete.CrossFadeAlpha(0, 0, true);
+        invenManage = GameObject.Find("InvenManage").GetComponent<TextMeshProUGUI>();
+        invenManage.CrossFadeAlpha(0, 0, true);
+
+        floorOverhead = GameObject.FindObjectOfType<FloorOverhead>();
+        uPressed = false;
     }
 
     void Update()
@@ -40,60 +48,135 @@ public class PlayerInventory : MonoBehaviour
         {
             DisplayInventory();
         }
-        //deleting item in slot 1, 2 or 3
-        else if (Input.GetKeyDown(KeyCode.Alpha1))
+
+        if (!uPressed)
         {
-            DeleteItem(1);
+            //deleting item in slot 1, 2 or 3
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                DeleteItem(1);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                DeleteItem(2);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                DeleteItem(3);
+            }
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        else
         {
-            DeleteItem(2);
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                UseItem(1);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                UseItem(2);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                UseItem(3);
+            }
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
+
+
+        if (Input.GetKeyDown(KeyCode.U))
         {
-            DeleteItem(3);
+            switch (uPressed)
+            {
+                case true:
+                    invenManage.text = "Deleting items";
+                    uPressed = false;
+                    break;
+                case false:
+                    uPressed = true;
+                    invenManage.text = "Using items";
+                    break;
+            }
+            invenManage.CrossFadeAlpha(1, 0, true);
+            invenManage.CrossFadeAlpha(0, 2, true);
         }
     }
 
     //functions
+    public void SortInventory(int index)
+    {
+        Item[] tempInventory = new Item[3];
+        int counter = -1;
+
+        for (int i = 0; i <= inventoryIndex; i++)
+        {
+            if (inventory[i] != null)
+            {
+                counter++;
+                tempInventory[counter] = inventory[i];
+            }
+        }
+
+        inventoryIndex = counter;
+        inventory = tempInventory;
+    }
+    public void UseItem(int index)
+    {
+        index--;
+
+        if (inventory[index] != null)
+        {
+            //potion and weapon currently have no use
+            switch (inventory[index].ItemType)
+            {
+                case "Potion":
+                    invenManage.text = "Potion has no use";
+                    break;
+                case "Teleport":
+                    //puts the player in a random new position
+                    Vector3 newPosition = floorOverhead.RoomPositions[UnityEngine.Random.Range(0, floorOverhead.RoomPositions.Count)];
+                    newPosition = new Vector3(newPosition.x, newPosition.y + 1.5f, newPosition.z);
+                    transform.position = newPosition;
+
+                    invenManage.text = "Teleport used";
+                    break;
+                case "Weapon":
+                    invenManage.text = "Weapon has no use";
+                    break;
+            }
+            inventory[index].DecreaseQuantity();
+            if (inventory[index].Quantity < 1)
+            {
+                inventory[index] = null;
+                SortInventory(index);
+            }
+            UpdateDisplay();
+        }
+        else
+        {
+            invenManage.text = "Slot empty";
+        }
+
+        invenManage.CrossFadeAlpha(1, 0, true);
+        invenManage.CrossFadeAlpha(0, 2, true);
+    }
 
     public void DeleteItem(int index)
     {
         index--;    //originally num between 1 and 3, - to make into array index
-
-        if (inventoryIndex == -1)
+        if (inventory[index] == null)
         {
-            inventoryDelete.text = "Inventory Empty";
-        }
-        else if (inventory[index] == null)
-        {
-            inventoryDelete.text = "Slot Empty";
+            invenManage.text = "Slot Empty";
         }
         else
         {
-            Item[] tempInventory = new Item[3];
-            int counter = -1;
-
             inventory[index] = null;
-
-            for (int i = 0; i <= inventoryIndex; i++)
-            {
-                if (inventory[i] != null)
-                {
-                    counter++;
-                    tempInventory[counter] = inventory[i];
-                }
-            }
-
-            inventoryIndex = counter;
-            inventory = tempInventory;
+            SortInventory(index);
 
             UpdateDisplay();
-            inventoryDelete.text = "Item Removed";
+            invenManage.text = "Item Removed";
         }
 
-        inventoryDelete.CrossFadeAlpha(1, 0, true);
-        inventoryDelete.CrossFadeAlpha(0, 2f, true);
+        invenManage.CrossFadeAlpha(1, 0, true);
+        invenManage.CrossFadeAlpha(0, 2f, true);
     }
     public void UpdateDisplay()
     {
@@ -220,6 +303,10 @@ public class PlayerInventory : MonoBehaviour
             {
                 return false;
             }
+        }
+        public void DecreaseQuantity()
+        {
+            quantity--;
         }
         public string ItemType {  get { return itemType; } }
         public int Quantity { get { return quantity; } }

@@ -240,7 +240,7 @@ GameObject:
   - component: {fileID: 246334596}
   - component: {fileID: 246334595}
   m_Layer: 5
-  m_Name: InventoryDelete
+  m_Name: InvenManage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
